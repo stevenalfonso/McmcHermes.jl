@@ -1,0 +1,9 @@
+name = "McmcHermes"
+uuid = "1dcdc7e9-a8b1-4892-8a0a-cdab5a60ee98"
+authors = ["stevenalfonso <stevenalfonso0@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
