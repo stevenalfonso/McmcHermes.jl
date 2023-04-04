@@ -82,7 +82,6 @@ Call the McmcHermes package and define the number of walkers, iterations, dimens
 
 
 ```@example abc
-
 using McmcHermes
 
 mu, sigma = 10, 2

@@ -10,9 +10,11 @@ import Pkg; Pkg.add("DataFrames")
 import Pkg; Pkg.add("ProgressMeter")
 import Pkg; Pkg.add("PairPlots")
 import Pkg; Pkg.add("CairoMakie")
+#import Pkg; Pkg.add("OpenCV")
 
 using Distributions, Plots, LaTeXStrings, DataFrames, ProgressMeter
 using PairPlots, CairoMakie
+#using OpenCV
 
 makedocs(
     sitename="McmcHermes",
