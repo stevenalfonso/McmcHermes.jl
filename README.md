@@ -4,20 +4,19 @@
 *A documentation for the McmcHermes package.*
 
 
-McmcHermes provides a simple but efficient way to generate Markov Chain Monte-Carlo chains in order to sampling a probability density distribution.
+McmcHermes provides a simple but efficient way to generate [Markov Chain Monte-Carlo](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) algorithms in order to sample a probability density distribution.
+
+```@contents
+```
 
 ## Overview
 
 The major functions in this module are:
 
-one_mcmc: run a MCMC chain with one walker.
 
 run_mcmc: run multiple chains with a specific number of walkers.
-
 get\_flat\_chain: get the stored chain of MCMC samples.
-
 get\_gelman\_rubin: get the Gelman Rubin convergence diagnostic of the chains. 
-
 
 
 !!! note
@@ -45,8 +44,7 @@ d = Truncated(Normal(mu, sigma), l_b, u_b)
 N = 1000
 data = rand(d, N)
 
-histogram(data, legend=false, size=(300,300), xlabel="data")
-
+histogram(data, legend=false, size=(300,300), xlabel="data", show=true)
 ```
 
 In order to sample the posterior probability distribution, it is necessary to define the likelihood, prior and logarithm of the posterior probability.
@@ -74,8 +72,7 @@ function log_probability(X::Vector, parameters::Vector)
         return -Inf
     end
     return lp + log_likelihood(X, parameters)
-end;
-
+end
 ```
 
 Call the McmcHermes package and define the number of walkers, iterations, dimension of the parameter space and the initial guess.
@@ -90,12 +87,11 @@ initparams = Vector{Float64}([mu, sigma])
 n_iter, n_walkers = 1000, 200
 n_dim, a = 2, 0.01
 
-chain_tests = run_mcmc(log_probability, data, initparams, n_iter, n_walkers, n_dim, a=a);
-size(chain_tests)
-
+chain_tests = run_mcmc(log_probability, data, initparams, n_iter, n_walkers, n_dim, a=a)
+println(size(chain_tests))
 ```
 
-Gelman-Rubin's diagnosis can be obtained from the chains.
+Gelman-Rubin's diagnostic can be obtained from the chains calling the get\_gelman\_rubin method.
 
 
 ```@example abc
@@ -106,7 +102,6 @@ Finally, plot the chains.
 
 
 ```@example abc
-
 labels = Tuple([L"\mu", L"\sigma"])
 x = 1:size(chain_tests)[1]
 p = []
@@ -116,7 +111,7 @@ for ind in 1:n_dim
 end
 
 plot(p[1], p[2], layout = (2,1))
-plot!(size=(600,200), xlims = (0, size(chain_tests)[1]))
+plot!(size=(600,200), xlims = (0, size(chain_tests)[1]), show=true)
 ```
 
 ```@example abc
@@ -128,15 +123,9 @@ flat = rename!(flat, Symbol.(colnames))
 
 using PairPlots, CairoMakie
 pairplot(flat)
-
 ```
 
-
-
-```@contents
-```
-
-Documentation for [McmcHermes](https://github.com/stevenalfonso/McmcHermes.jl).
+Develop by [Steven Alfonso](https://github.com/stevenalfonso).
 
 ```@index
 ```
