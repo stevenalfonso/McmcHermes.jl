@@ -37,7 +37,7 @@ Pkg.add("McmcHermes")
 First, let's generate some data:
 
 ```@example abc
-using Optim, Distributions, Plots, LaTeXStrings, DataFrames, ProgressMeter
+using Distributions, Plots, LaTeXStrings, DataFrames, ProgressMeter
 
 mu, sigma = 10, 2
 l_b, u_b = 0, 20
@@ -81,7 +81,7 @@ end;
 Call the McmcHermes package and define the number of walkers, iterations, dimension of the parameter space and the initial guess.
 
 
-```@example abc;
+```@example abc
 
 using McmcHermes
 
@@ -131,7 +131,6 @@ using PairPlots, CairoMakie
 pairplot(flat)
 
 ```
-
 
 
 
