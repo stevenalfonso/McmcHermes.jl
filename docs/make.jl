@@ -3,7 +3,8 @@
 using Documenter
 using McmcHermes
 
-using Optim, Distributions, Plots, LaTeXStrings, DataFrames
+using Distributions, Plots, LaTeXStrings, DataFrames, ProgressMeter
+using PairPlots, CairoMakie
 
 makedocs(
     sitename="McmcHermes",
