@@ -35,7 +35,7 @@ Pkg.add("McmcHermes")
 
 First, let's generate some data:
 
-```@example abc
+```julia
 using Distributions, Plots, LaTeXStrings, DataFrames, ProgressMeter
 
 mu, sigma = 10, 2
@@ -52,7 +52,7 @@ histogram(data, legend=false, size=(300,300), xlabel="data", show=true)
 In order to sample the posterior probability distribution, it is necessary to define the likelihood, prior and logarithm of the posterior probability.
 
 
-```@example abc
+```julia
 
 function log_likelihood(X::Vector, parameters::Vector)
     mu, sigma = parameters[1], parameters[2]
@@ -80,7 +80,7 @@ end
 Call the McmcHermes package and define the number of walkers, iterations, dimension of the parameter space and the initial guess.
 
 
-```@example abc
+```julia
 using McmcHermes
 
 mu, sigma = 10, 2
@@ -92,18 +92,22 @@ n_dim, a = 2, 0.01
 chain_tests = run_mcmc(log_probability, data, initparams, n_iter, n_walkers, n_dim, a=a)
 println(size(chain_tests))
 ```
+(1000, 100, 2)
+
 
 Gelman-Rubin's diagnostic can be obtained from the chains calling the get\_gelman\_rubin method.
 
 
-```@example abc
+```julia 
 println("Gelman Rubin Diagnostic: ", get_gelman_rubin(chain_tests))
 ```
+Gelman Rubin Diagnostic: 1.0206366055763267
+
 
 Finally, plot the chains.
 
 
-```@example abc
+```julia
 labels = Tuple([L"\mu", L"\sigma"])
 x = 1:size(chain_tests)[1]
 p = []
@@ -117,7 +121,7 @@ plot!(size=(600,200), xlims = (0, size(chain_tests)[1]), show=true)
 ```
 ![chains](./assets/chains.png)
 
-```@example abc
+```julia
 flat_chains = get_flat_chain(chain_tests, burn_in=100, thin=10)
 
 flat = DataFrame(flat_chains, :auto)
@@ -128,6 +132,7 @@ using PairPlots, CairoMakie
 pairplot(flat)
 ```
 ![corner](./assets/corner.png)
+
 
 Develop by [Steven Alfonso](https://github.com/stevenalfonso).
 
