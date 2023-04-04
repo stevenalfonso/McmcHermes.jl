@@ -3,6 +3,8 @@
 using Documenter
 using McmcHermes
 
+using Optim, Distributions, Plots, LaTeXStrings, DataFrames
+
 makedocs(
     sitename="McmcHermes",
     format=Documenter.HTML(;
