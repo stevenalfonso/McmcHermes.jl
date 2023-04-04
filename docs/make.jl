@@ -1,11 +1,12 @@
-push!(LOAD_PATH,"../src/")
+# push!(LOAD_PATH,"../src/")
 
 using Documenter
 using McmcHermes
 
 makedocs(
     sitename="McmcHermes",
-    format=Documenter.HTML(),
+    format=Documenter.HTML(;
+        prettyurls = get(ENV, "CI", nothing) == "true"),
     modules=[McmcHermes]
 )
 
@@ -14,7 +15,6 @@ makedocs(
 # for more information.
 deploydocs(;
     repo="github.com/stevenalfonso/McmcHermes.jl.git",
-    versions = nothing,
 )#
 
 
