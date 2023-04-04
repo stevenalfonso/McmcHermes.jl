@@ -47,7 +47,7 @@ data = rand(d, N)
 histogram(data, legend=false, size=(300,300), xlabel="data", show=true)
 ```
 
-![data](./assets/figs/data.png)
+![data](./assets/data.png)
 
 In order to sample the posterior probability distribution, it is necessary to define the likelihood, prior and logarithm of the posterior probability.
 
@@ -115,7 +115,7 @@ end
 plot(p[1], p[2], layout = (2,1))
 plot!(size=(600,200), xlims = (0, size(chain_tests)[1]), show=true)
 ```
-![chains](./assets/figs/chains.png)
+![chains](./assets/chains.png)
 
 ```@example abc
 flat_chains = get_flat_chain(chain_tests, burn_in=100, thin=10)
@@ -127,7 +127,7 @@ flat = rename!(flat, Symbol.(colnames))
 using PairPlots, CairoMakie
 pairplot(flat)
 ```
-![corner](./assets/figs/corner.png)
+![corner](./assets/corner.png)
 
 Develop by [Steven Alfonso](https://github.com/stevenalfonso).
 
