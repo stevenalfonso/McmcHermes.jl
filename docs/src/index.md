@@ -87,7 +87,7 @@ using McmcHermes
 mu, sigma = 10, 2
 initparams = Vector{Float64}([mu, sigma])
 
-n_iter, n_walkers = 1000, 200
+n_iter, n_walkers = 1000, 100
 n_dim, a = 2, 0.01
 
 chain_tests = run_mcmc(log_probability, data, initparams, n_iter, n_walkers, n_dim, a=a)
