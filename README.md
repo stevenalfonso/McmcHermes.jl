@@ -31,6 +31,3 @@ Pkg.add("McmcHermes")
 ```
 
 See here the [documentation](https://stevenalfonso.github.io/McmcHermes.jl/dev/).
-
-
-*Develop by [Steven Alfonso](https://github.com/stevenalfonso).*
