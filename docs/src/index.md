@@ -14,8 +14,10 @@ McmcHermes provides a simple but efficient way to generate [Markov Chain Monte-C
 The major functions in this module are:
 
 
-run_mcmc: run multiple chains with a specific number of walkers.
+run\_mcmc: run multiple chains with a specific number of walkers.
+
 get\_flat\_chain: get the stored chain of MCMC samples.
+
 get\_gelman\_rubin: get the Gelman Rubin convergence diagnostic of the chains. 
 
 
@@ -53,7 +55,6 @@ In order to sample the posterior probability distribution, it is necessary to de
 
 
 ```julia
-
 function log_likelihood(X::Vector, parameters::Vector)
     mu, sigma = parameters[1], parameters[2]
     y = 1 ./ (sqrt(2 * pi) .* sigma) .* exp.( -0.5 * ((X .- mu)./sigma).^2 )
@@ -134,7 +135,7 @@ pairplot(flat)
 ![corner](./assets/corner.png)
 
 
-Develop by [Steven Alfonso](https://github.com/stevenalfonso).
+*Develop by [Steven Alfonso](https://github.com/stevenalfonso).*
 
 
 ```@index

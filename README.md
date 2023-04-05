@@ -1,3 +1,7 @@
+[![Runtests](https://github.com/stevenalfonso/McmcHermes.jl/actions/workflows/Runtests.yml/badge.svg)](https://github.com/stevenalfonso/McmcHermes.jl/actions/workflows/Runtests.yml)
+[![Documentation](https://github.com/stevenalfonso/McmcHermes.jl/actions/workflows/documentation.yml/badge.svg)](https://github.com/stevenalfonso/McmcHermes.jl/actions/workflows/documentation.yml)
+[![CI](https://github.com/stevenalfonso/McmcHermes.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/stevenalfonso/McmcHermes.jl/actions/workflows/CI.yml)
+
 # McmcHermes.jl
 
 
