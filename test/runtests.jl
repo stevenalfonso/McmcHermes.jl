@@ -35,10 +35,11 @@ using Test
 
     mu, sigma = 10, 2
     initparams = Vector{Float64}([mu, sigma])
-    seed = rand(n_walkers, n_dim) * 1e-4 .+ transpose(initparams)
     
     n_iter, n_walkers = 100, 50
     n_dim, a = 2, 0.02
+
+    seed = rand(n_walkers, n_dim) * 1e-4 .+ transpose(initparams)
     chain_tests = McmcHermes.run_mcmc(log_probability, data, seed, n_iter, n_walkers, n_dim, a=a)
 
     @test typeof(chain_tests) == Array{Float64, 3}
