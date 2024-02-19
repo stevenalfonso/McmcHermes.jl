@@ -7,7 +7,7 @@ using Test
 
     mu, sigma = 10, 2
     l_b, u_b = 0, 20
-    d = Truncated(Normal(mu, sigma), l_b, u_b)
+    d = truncated(Normal(mu, sigma), l_b, u_b)
     N = 1000
     data = rand(d, N)
 
@@ -35,15 +35,12 @@ using Test
 
     mu, sigma = 10, 2
     initparams = Vector{Float64}([mu, sigma])
-    
-    n_iter, a = 10000, 0.01
-    chain_tests_one = McmcHermes.one_mcmc(log_probability, data, initparams, n_iter, a)
-    @test typeof(chain_tests_one) == Array{Float64, 3}
-    println(size(chain_tests_one))
+    seed = rand(n_walkers, n_dim) * 1e-4 .+ transpose(initparams)
     
     n_iter, n_walkers = 100, 50
     n_dim, a = 2, 0.02
-    chain_tests = McmcHermes.run_mcmc(log_probability, data, initparams, n_iter, n_walkers, n_dim, a=a)
+    chain_tests = McmcHermes.run_mcmc(log_probability, data, seed, n_iter, n_walkers, n_dim, a=a)
+
     @test typeof(chain_tests) == Array{Float64, 3}
     println(size(chain_tests))
 
