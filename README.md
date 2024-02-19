@@ -19,15 +19,18 @@ run_mcmc: run multiple chains with a specific number of walkers.
 
 get\_flat\_chain: get the stored chain of MCMC samples.
 
-get\_gelman\_rubin: get the Gelman Rubin convergence diagnostic of the chains. 
+gelman\_rubin\_diagnostic: get the Gelman Rubin convergence diagnostic of the chains. 
 
 
 
-## Pkg Registry
+## Installation
 
 ```julia
 using Pkg
 Pkg.add("McmcHermes")
 ```
+
+## Example
+
 
 See here the [documentation](https://stevenalfonso.github.io/McmcHermes.jl/dev/).

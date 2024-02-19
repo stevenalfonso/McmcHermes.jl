@@ -1,84 +1,118 @@
 module McmcHermes
 
-using ProgressMeter
 using Distributions
 
-export one_mcmc, run_mcmc, get_flat_chain, get_gelman_rubin
+export one_mcmc, run_mcmc, get_flat_chain, gelman_rubin_diagnostic, sampler
+
+
 
 """
 
-    one_mcmc(log_prob, data, parameters, n_iter, a)
+one_mcmc(log_prob, data, parameters, n_iter, a)
 
-Returns one chain with the dimension of (n_iter, 1, n_dim)
+Returns one chain with dimension of (n_iter, 1, n_dim)
 
 """
 
-function one_mcmc(log_prob::Function, data::Vector, parameters::Vector, n_iter::Int64, a::Float64)
-    
+
+
+function one_mcmc(log_prob::Function, 
+    data::Vector, 
+    parameters::Vector, 
+    n_iter::Int64, 
+    a::Float64)
+
     x = ones(( n_iter, length(parameters) ))
     x[1,:] = [parameters][1]
-    space = zeros(length(parameters))
+    new_parameters = zeros(length(parameters))
 
     for i in 2:n_iter
-        
+
+        # Propose new parameters
         for j in 1:length(parameters)
-            space[j] = x[i-1,j] + a * rand(Uniform(-1, 1), 1)[1]
+            new_parameters[j] = x[i-1,j] + a * randn(1)[1]
         end
 
         present = log_prob(data, parameters)
-        future = log_prob(data, space)
-        
-        alpha = min( exp(future - present), 1.0)
-        g = rand()
+        future = log_prob(data, new_parameters)
 
-        if alpha > g
+        # Accept or reject the proposed parameters
+        alpha = min( exp(future - present), 1.0) 
 
+        if rand() < alpha
             for k in 1:length(parameters)
-                x[i,k] = space[k]
+                x[i,k] = new_parameters[k]
             end
-
         else
-            x[i,:] = x[i-1,:]     
+            x[i,:] = x[i-1,:]   
         end
+
     end
 
     return x[:,:,:]
 end
 
 
-"""
-
-    run_mcmc(log_prob, data, parameters, n_iter, n_walkers, n_dim, a)
-
-Returns chains with the dimension of (n_iter, n_walkers, n_dim)
 
 """
 
-function run_mcmc(log_prob::Function, data::Vector, parameters::Vector, n_iter::Int64, n_walkers::Int64, 
-    n_dim::Int64; a::Float64=0.1)
+run_mcmc(log_prob, data, seed, n_iter, n_walkers, n_dim, a)
+
+Returns chains with dimension of (n_iter, n_walkers, n_dim)
+
+"""
+
+
+
+function run_mcmc(log_prob::Function, 
+    data::Vector, 
+    seed::Matrix, 
+    n_iter::Int64, 
+    n_walkers::Int64, 
+    n_dim::Int64; 
+    a::Float64=0.1)
+
+    println("Running chains...")
 
     mcmc_chains = ones(( n_iter, n_dim, n_walkers ))
-    seed = rand(n_walkers, n_dim) * 1e-2 .+ transpose(parameters)
 
-    @showprogress "Running chains..." for walkers in 1:n_walkers
+    start_time = time_ns()
+
+    Threads.@threads for walkers in 1:n_walkers
         one_chain = one_mcmc(log_prob, data, seed[walkers,:], n_iter, a)
         mcmc_chains[:,:,walkers] = one_chain
-        sleep(0.1)
+    end
+
+    elapsed_time = (time_ns() - start_time) / 1_000_000_000  # Convert to seconds
+
+    if elapsed_time < 60
+        println("Time elapsed running mcmc: $(elapsed_time) seconds.")
+
+    elseif (elapsed_time >= 60) && (elapsed_time < 3600)
+        println("Time elapsed running mcmc: $(elapsed_time / 60) minutes.")
+
+    else
+        println("Time elapsed running mcmc: $(elapsed_time / 3600) hours.")
+
     end
 
     chains = permutedims(mcmc_chains, [1, 3, 2])
 
     return chains
+
 end
+
 
 
 """
 
-    get_flat_chain(array, burn_in, thin) 
+get_flat_chain(array, burn_in, thin) 
 
 Returns the stored chain of MCMC samples.
 
 """
+
+
 
 function get_flat_chain(array::Array; burn_in::Int=1, thin::Int=1)
     
@@ -101,23 +135,72 @@ end
 
 """
 
-    get_gelman_rubin(chains)
+gelman_rubin_diagnostic(chains)
 
 Get the Gelman Rubin convergence diagnostic of the chains.
 Returns the Gelman-Rubin number.
 
 """
 
-function get_gelman_rubin(chains)
-    s_j = var(chains, dims=2)
+
+function gelman_rubin_diagnostic(chains)
+
+    s_j = var(chains, dims=2) # within chain variance
     W = mean(s_j)
-    theta = mean(chains, dims=2)
-    theta_j = mean(theta, dims=1)   
+
+    theta = mean(chains, dims=2) # chain mean
+    theta_j = mean(theta, dims=1) # grand mean
     M, N = size(chains)[1], size(chains)[2]
-    B = N / (M - 1) * sum((theta_j .- theta).^2)
+    B = N / (M - 1) * sum((theta_j .- theta).^2) # between chain variance
+    
     var_theta = (N - 1) / N * W + B / N
-    R_hat = sqrt(var_theta / W)
+    R_hat = sqrt(var_theta / W) # Gelma-Rubin statistic
+    
     return R_hat
+    
 end
+
+
+
+"""
+sampler(pdf, n_samples, intervals, params)
+
+Get n_samples samples from a 1D Probability Density Distribution
+given some parameters. The interval works for the range of samples.
+
+"""
+
+
+
+function sampler(pdf::Function, 
+    n_samples::Number, 
+    interval::Vector, 
+    params::Vector)
+
+
+    #states = []
+    states = ones(n_samples)
+    current = rand(Uniform(interval[1], interval[2]), 1)[1]
+
+    for i in 1:n_samples
+        
+        #push!(states, current)
+        states[i] = current
+        movement = rand(Uniform(interval[1], interval[2]), 1)[1]
+
+        current_prob = pdf(current, params)
+        movement_prob = pdf(movement, params)
+        
+        alpha = min(movement_prob / current_prob, 1.0)
+        
+        if rand() < alpha
+            current = movement
+        end
+    end
+            
+    return states
+
+end
+
 
 end # module McmcHermes
