@@ -47,7 +47,7 @@ using Test
     @test typeof(chain_tests) == Array{Float64, 3}
     println(size(chain_tests))
 
-    g_r = McmcHermes.get_gelman_rubin(chain_tests)
+    g_r = McmcHermes.gelman_rubin_diagnostic(chain_tests)
     @test typeof(g_r) == Float64
 
     flat_chains = McmcHermes.get_flat_chain(chain_tests, burn_in=10, thin=10)
