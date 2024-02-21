@@ -48,7 +48,7 @@ data = rand(d, N)
 histogram(data, legend=false, size=(300,300), xlabel="data", show=true)
 ```
 
-![data](./assets/hist.png)
+![data](./docs/src/assets/hist.png)
 
 Then, we define the Gaussian likelihood and an uniform prior:
 
@@ -112,7 +112,7 @@ end
 plot(p[1], p[2], layout=(2,1), xlabel="iterations", tickfontsize=5, xguidefontsize=8)
 plot!(size=(600,200), xlims=(0, size(chains)[1]), show=true, lw=1)
 ```
-![chains](./assets/chains.png)
+![chains](./docs/src/assets/chains.png)
 
 Chains can also be plotted in a corner. To do so, first get the flat chain
 
@@ -126,7 +126,7 @@ flat = rename!(flat, Symbol.(colnames))
 using PairPlots, CairoMakie
 pairplot(flat)
 ```
-![corner](./assets/corner.png)
+![corner](./docs/src/assets/corner.png)
 
 ### Get samples from a distribution (New)
 
