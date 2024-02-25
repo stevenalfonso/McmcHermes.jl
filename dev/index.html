@@ -58,7 +58,8 @@ n_dim = 2
 seed = rand(n_walkers, n_dim) * 1e-4 .+ transpose(initparams)
 
 chains = McmcHermes.run_mcmc(log_probability, data, seed, n_iter, n_walkers, n_dim, a=0.01)
-println(size(chains))</code></pre><p class="math-container">\[(5000, 30, 2)\]</p><p>The convergence of the chains can be validated by the Gelman-Rubin&#39;s diagnostic:</p><pre><code class="language-julia hljs">println(&quot;Gelman Rubin Diagnostic: &quot;, McmcHermes.get_gelman_rubin(chains))</code></pre><p class="math-container">\[Gelman Rubin Diagnostic: 1.0206366055763267\]</p><p>Finally, plot the chains.</p><pre><code class="language-julia hljs">labels = Tuple([L&quot;\mu&quot;, L&quot;\sigma&quot;])
+
+println(size(chains)) # (5000, 30, 2)</code></pre><p>The convergence of the chains can be validated by the Gelman-Rubin&#39;s diagnostic:</p><pre><code class="language-julia hljs">println(&quot;Gelman Rubin Diagnostic: &quot;, McmcHermes.get_gelman_rubin(chains)) # 1.0206366055</code></pre><p>Finally, plot the chains.</p><pre><code class="language-julia hljs">labels = Tuple([L&quot;\mu&quot;, L&quot;\sigma&quot;])
 x = 1:size(chains)[1]
 p = []
 for ind in 1:n_dim
@@ -68,11 +69,11 @@ end
 
 plot(p[1], p[2], layout = (2,1))
 plot!(size=(600,200), xlims = (0, size(chains)[1]), show=true)</code></pre><p><img src="assets/chains.png" alt="chains"/></p><p>Chains can also be plotted in a corner. To do so, get the flat chain</p><pre><code class="language-julia hljs">flat_chains = McmcHermes.get_flat_chain(chains, burn_in=100, thin=10)
-println(size(flat_chains))
-mean_posterior = quantile(flat_chains[:, 1], 0.5)
-std_posterior = quantile(flat_chains[:, 2], 0.5)
+println(size(flat_chains)) # (14901, 2)
+mean_posterior = quantile(flat_chains[:, 1], 0.5) # 10.0273672
+std_posterior = quantile(flat_chains[:, 2], 0.5) # 1.9998453
 
 using PairPlots, CairoMakie
 
 table = (; x=flat_chains[:,1], y=flat_chains[:,2],)
-fig = pairplot(table, labels = Dict(:x =&gt; L&quot;\mu&quot;, :y =&gt; L&quot;\sigma&quot;))</code></pre><p class="math-container">\[(14901, 2)\]</p><p class="math-container">\[Posterior mean: 10.027367269323483\]</p><p class="math-container">\[Posterior standard deviation: 1.9998453231593405\]</p><p><img src="assets/corner.png" alt="corner"/></p><p><em>Develop by <a href="https://github.com/stevenalfonso">J. Alfonso</a>.</em></p><ul></ul></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Sunday 25 February 2024 22:18">Sunday 25 February 2024</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+fig = pairplot(table, labels = Dict(:x =&gt; L&quot;\mu&quot;, :y =&gt; L&quot;\sigma&quot;))</code></pre><p>&lt;img src=&quot;./assets/corner.png&quot; alt=&quot;corner&quot; width=&quot;200&quot;/&gt;</p><p><em>Develop by <a href="https://github.com/stevenalfonso">J. Alfonso</a>.</em></p><ul></ul></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Sunday 25 February 2024 22:47">Sunday 25 February 2024</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
