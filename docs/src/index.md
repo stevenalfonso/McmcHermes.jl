@@ -24,15 +24,9 @@ Pkg.add("McmcHermes")
 
 ### Sampling
 
-If you want to draw samples from the following distribution:
-
-$P(x) = \frac{1}{\sqrt{2 \pi} \sigma_{1}} e^\left[- \frac{(x - \mu_{1})^{2}}{2 \sigma_{1}^{2}}\right] + \frac{1}{\sqrt{2 \pi} \sigma_{2}} e^\left[- \frac{(x - \mu_{2})^{2}}{2 \sigma_{2}^{2}}\right]$
-
-You would do something like:
+If you want to draw samples from two Gaussian distributions, you would do something like:
 
 ```julia
-using McmcHermes
-
 function pdf(X::Number, params::Vector)
     s1, s2, mu1, mu2 = params[1], params[2], params[3], params[4]
     return 1 / (sqrt(2 * pi) * s1) * exp( -0.5*((X - mu1)/s1)^2 ) + 1 / (sqrt(2 * pi) * s2) * exp( -0.5*((X - mu2)/s2)^2 )
@@ -43,6 +37,8 @@ function gaussian_function(X::Vector, params::Vector)
     s1, s2, mu1, mu2 = params[1], params[2], params[3], params[4]
     return 0.5 ./ (sqrt(2 * pi) .* s1) .* exp.(-0.5*((x_values .- mu1)./s1).^2) .+ 0.5 ./ (sqrt(2 * pi) .* s2) .* exp.(-0.5*((x_values .- mu2)./s2).^2)
 end
+
+using McmcHermes
 
 params = [3, 1.5, -5, 5]
 interval = [-20, 20]
@@ -67,10 +63,10 @@ using Distributions, Plots, LaTeXStrings, DataFrames
 mu, sigma = 10, 2 # truths
 l_b, u_b = 0, 20
 d = Truncated(Normal(mu, sigma), l_b, u_b)
-N = 1000
+N = 10000
 data = rand(d, N)
 
-histogram(data, legend=false, size=(300,300), xlabel="data", show=true)
+histogram(data, legend=false, size=(400,400), xlabel=L"data", show=true, normalize=:pdf,  ylabel=L"p(x)", xguidefontsize=12, color=:gray, yguidefontsize=12)
 ```
 
 ![data](./assets/hist.png)
@@ -154,7 +150,7 @@ table = (; x=flat_chains[:,1], y=flat_chains[:,2],)
 fig = pairplot(table, labels = Dict(:x => L"\mu", :y => L"\sigma"))
 ```
 
-<img src="./assets/corner.png" alt="corner" width="200"/>
+![corner](./assets/corner.png)
 
 
 *Develop by [J. Alfonso](https://github.com/stevenalfonso).*
