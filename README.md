@@ -4,7 +4,9 @@
 
 # McmcHermes.jl
 
-![samples](./docs/src/assets/logo.png)
+<div align="center">
+<img src="./docs/src/assets/logo.png" alt="logo" width="200"/>
+</div>
 
 McmcHermes is a pure-Julia implementation of [Metropolis Hasting Algorithm](https://en.wikipedia.org/wiki/Metropolis–Hastings_algorithm) under an MIT license. McmcHermes will help you if you want to estimate model parameters or sample a probability density distribution.
 

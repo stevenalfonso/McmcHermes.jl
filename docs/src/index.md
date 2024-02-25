@@ -26,7 +26,7 @@ Pkg.add("McmcHermes")
 
 If you want to draw samples from the following distribution:
 
-$$P(x) = \frac{1}{\sqrt{2 \pi} \sigma_{1}} e^\left[- \frac{(x - \mu_{1})^{2}}{2 \sigma_{1}^{2}}\right] + \frac{1}{\sqrt{2 \pi} \sigma_{2}} e^\left[- \frac{(x - \mu_{2})^{2}}{2 \sigma_{2}^{2}}\right]$$
+$P(x) = \frac{1}{\sqrt{2 \pi} \sigma_{1}} e^\left[- \frac{(x - \mu_{1})^{2}}{2 \sigma_{1}^{2}}\right] + \frac{1}{\sqrt{2 \pi} \sigma_{2}} e^\left[- \frac{(x - \mu_{2})^{2}}{2 \sigma_{2}^{2}}\right]$
 
 You would do something like:
 
@@ -114,16 +114,15 @@ n_dim = 2
 seed = rand(n_walkers, n_dim) * 1e-4 .+ transpose(initparams)
 
 chains = McmcHermes.run_mcmc(log_probability, data, seed, n_iter, n_walkers, n_dim, a=0.01)
-println(size(chains))
+
+println(size(chains)) # (5000, 30, 2)
 ```
-$(5000, 30, 2)$
 
 The convergence of the chains can be validated by the Gelman-Rubin's diagnostic:
 
 ```julia 
-println("Gelman Rubin Diagnostic: ", McmcHermes.get_gelman_rubin(chains))
+println("Gelman Rubin Diagnostic: ", McmcHermes.get_gelman_rubin(chains)) # 1.0206366055
 ```
-$Gelman Rubin Diagnostic: 1.0206366055763267$
 
 Finally, plot the chains.
 
@@ -145,20 +144,17 @@ Chains can also be plotted in a corner. To do so, get the flat chain
 
 ```julia
 flat_chains = McmcHermes.get_flat_chain(chains, burn_in=100, thin=10)
-println(size(flat_chains))
-mean_posterior = quantile(flat_chains[:, 1], 0.5)
-std_posterior = quantile(flat_chains[:, 2], 0.5)
+println(size(flat_chains)) # (14901, 2)
+mean_posterior = quantile(flat_chains[:, 1], 0.5) # 10.0273672
+std_posterior = quantile(flat_chains[:, 2], 0.5) # 1.9998453
 
 using PairPlots, CairoMakie
 
 table = (; x=flat_chains[:,1], y=flat_chains[:,2],)
 fig = pairplot(table, labels = Dict(:x => L"\mu", :y => L"\sigma"))
 ```
-$(14901, 2)$
-$Posterior mean: 10.027367269323483$
-$Posterior standard deviation: 1.9998453231593405$
 
-![corner](./assets/corner.png)
+<img src="./assets/corner.png" alt="corner" width="200"/>
 
 
 *Develop by [J. Alfonso](https://github.com/stevenalfonso).*
