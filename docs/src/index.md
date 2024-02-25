@@ -3,44 +3,68 @@
 
 *A documentation for the McmcHermes package.*
 
-
-McmcHermes provides a simple but efficient way to generate [Markov Chain Monte-Carlo](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) algorithms in order to sample a probability density distribution.
+McmcHermes is a pure-Julia implementation of [Metropolis Hasting Algorithm](https://en.wikipedia.org/wiki/Metropolis–Hastings_algorithm) under an MIT license. McmcHermes will help you if you want to estimate model parameters or sample a probability density distribution.
 
 ```@contents
 ```
 
-## Overview
-
-The major functions in this module are:
-
-
-run\_mcmc: run multiple chains with a specific number of walkers.
-
-get\_flat\_chain: get the stored chain of MCMC samples.
-
-get\_gelman\_rubin: get the Gelman Rubin convergence diagnostic of the chains. 
-
-
-!!! note
-
-    This guide assumes that you already have define your likelihood, prior and the logarithm of the posterior probability as in the example below.
-
-
-## Pkg Registry
+## Installation
 
 ```julia
 using Pkg
 Pkg.add("McmcHermes")
 ```
 
-## Example
+## Basic Usage
 
-First, let's generate some data:
+!!! note
+
+    This guide assumes that you already have define your likelihood, prior and the logarithm of the posterior probability as in the example below.
+
+
+### Sampling
+
+If you want to draw samples from the following distribution:
+
+$$P(x) = \frac{1}{\sqrt{2 \pi} \sigma_{1}} e^\left[- \frac{(x - \mu_{1})^{2}}{2 \sigma_{1}^{2}}\right] + \frac{1}{\sqrt{2 \pi} \sigma_{2}} e^\left[- \frac{(x - \mu_{2})^{2}}{2 \sigma_{2}^{2}}\right]$$
+
+You would do something like:
 
 ```julia
-using Distributions, Plots, LaTeXStrings, DataFrames, ProgressMeter
+using McmcHermes
 
-mu, sigma = 10, 2
+function pdf(X::Number, params::Vector)
+    s1, s2, mu1, mu2 = params[1], params[2], params[3], params[4]
+    return 1 / (sqrt(2 * pi) * s1) * exp( -0.5*((X - mu1)/s1)^2 ) + 1 / (sqrt(2 * pi) * s2) * exp( -0.5*((X - mu2)/s2)^2 )
+end
+
+function gaussian_function(X::Vector, params::Vector)
+    x_values = collect(range(minimum(X), maximum(X), length=length(X)))
+    s1, s2, mu1, mu2 = params[1], params[2], params[3], params[4]
+    return 0.5 ./ (sqrt(2 * pi) .* s1) .* exp.(-0.5*((x_values .- mu1)./s1).^2) .+ 0.5 ./ (sqrt(2 * pi) .* s2) .* exp.(-0.5*((x_values .- mu2)./s2).^2)
+end
+
+params = [3, 1.5, -5, 5]
+interval = [-20, 20]
+sampling = McmcHermes.sampler(pdf, 10000, interval, params)
+
+x_values = Vector{Float64}(range(interval[1], interval[2], 100))
+
+histogram(sampling, xlabel=L"samples", ylabel=L"p(x)", xguidefontsize=12, color=:gray, yguidefontsize=12, normalize=:pdf, show=true, label="samples")
+plot!(x_values, gaussian_function(x_values, params), lw=3, size=(500,400), label="Function", lc=:orange, show=true)
+```
+
+![samples](./assets/samples.png)
+
+
+### Parameter estimation
+
+To estimate parameters $\mu$ and $\sigma$ from a gaussian distribution. First, you need some data
+
+```julia
+using Distributions, Plots, LaTeXStrings, DataFrames
+
+mu, sigma = 10, 2 # truths
 l_b, u_b = 0, 20
 d = Truncated(Normal(mu, sigma), l_b, u_b)
 N = 1000
@@ -49,10 +73,9 @@ data = rand(d, N)
 histogram(data, legend=false, size=(300,300), xlabel="data", show=true)
 ```
 
-![data](./assets/data.png)
+![data](./assets/hist.png)
 
-In order to sample the posterior probability distribution, it is necessary to define the likelihood, prior and logarithm of the posterior probability.
-
+Now, define likelihood and prior
 
 ```julia
 function log_likelihood(X::Vector, parameters::Vector)
@@ -78,8 +101,7 @@ function log_probability(X::Vector, parameters::Vector)
 end
 ```
 
-Call the McmcHermes package and define the number of walkers, iterations, dimension of the parameter space and the initial guess.
-
+Then, define the number of walkers, iterations, dimension of the parameter space and the initial guess.
 
 ```julia
 using McmcHermes
@@ -87,55 +109,59 @@ using McmcHermes
 mu, sigma = 10, 2
 initparams = Vector{Float64}([mu, sigma])
 
-n_iter, n_walkers = 1000, 100
-n_dim, a = 2, 0.01
+n_iter, n_walkers = 5000, 30
+n_dim = 2
+seed = rand(n_walkers, n_dim) * 1e-4 .+ transpose(initparams)
 
-chain_tests = run_mcmc(log_probability, data, initparams, n_iter, n_walkers, n_dim, a=a)
-println(size(chain_tests))
+chains = McmcHermes.run_mcmc(log_probability, data, seed, n_iter, n_walkers, n_dim, a=0.01)
+println(size(chains))
 ```
-(1000, 100, 2)
+$(5000, 30, 2)$
 
-
-Gelman-Rubin's diagnostic can be obtained from the chains calling the get\_gelman\_rubin method.
-
+The convergence of the chains can be validated by the Gelman-Rubin's diagnostic:
 
 ```julia 
-println("Gelman Rubin Diagnostic: ", get_gelman_rubin(chain_tests))
+println("Gelman Rubin Diagnostic: ", McmcHermes.get_gelman_rubin(chains))
 ```
-Gelman Rubin Diagnostic: 1.0206366055763267
-
+$Gelman Rubin Diagnostic: 1.0206366055763267$
 
 Finally, plot the chains.
 
-
 ```julia
 labels = Tuple([L"\mu", L"\sigma"])
-x = 1:size(chain_tests)[1]
+x = 1:size(chains)[1]
 p = []
 for ind in 1:n_dim
-    push!(p, plot(x, [chain_tests[:,i,ind] for i in 1:size(chain_tests)[2]], legend=false, 
+    push!(p, plot(x, [chains[:,i,ind] for i in 1:size(chains)[2]], legend=false, 
     lc=:black, lw=1, ylabel=labels[ind], alpha = 0.1, xticks=false))
 end
 
 plot(p[1], p[2], layout = (2,1))
-plot!(size=(600,200), xlims = (0, size(chain_tests)[1]), show=true)
+plot!(size=(600,200), xlims = (0, size(chains)[1]), show=true)
 ```
 ![chains](./assets/chains.png)
 
-```julia
-flat_chains = get_flat_chain(chain_tests, burn_in=100, thin=10)
+Chains can also be plotted in a corner. To do so, get the flat chain
 
-flat = DataFrame(flat_chains, :auto)
-colnames = ["mu", "sigma"]
-flat = rename!(flat, Symbol.(colnames))
+```julia
+flat_chains = McmcHermes.get_flat_chain(chains, burn_in=100, thin=10)
+println(size(flat_chains))
+mean_posterior = quantile(flat_chains[:, 1], 0.5)
+std_posterior = quantile(flat_chains[:, 2], 0.5)
 
 using PairPlots, CairoMakie
-pairplot(flat)
+
+table = (; x=flat_chains[:,1], y=flat_chains[:,2],)
+fig = pairplot(table, labels = Dict(:x => L"\mu", :y => L"\sigma"))
 ```
+$(14901, 2)$
+$Posterior mean: 10.027367269323483$
+$Posterior standard deviation: 1.9998453231593405$
+
 ![corner](./assets/corner.png)
 
 
-*Develop by [Steven Alfonso](https://github.com/stevenalfonso).*
+*Develop by [J. Alfonso](https://github.com/stevenalfonso).*
 
 
 ```@index
