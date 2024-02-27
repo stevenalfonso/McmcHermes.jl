@@ -19,4 +19,4 @@ Pkg.add("McmcHermes")
 ```
 
 
-Here is the [documentation](https://stevenalfonso.github.io/McmcHermes.jl/dev/).
+Some examples and basic usage are in the [documentation](https://stevenalfonso.github.io/McmcHermes.jl/dev/).
