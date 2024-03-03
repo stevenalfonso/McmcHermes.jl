@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>McmcHermes.jl · McmcHermes</title><meta name="title" content="McmcHermes.jl · McmcHermes"/><meta property="og:title" content="McmcHermes.jl · McmcHermes"/><meta property="twitter:title" content="McmcHermes.jl · McmcHermes"/><meta name="description" content="Documentation for McmcHermes."/><meta property="og:description" content="Documentation for McmcHermes."/><meta property="twitter:description" content="Documentation for McmcHermes."/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img src="assets/logo.png" alt="McmcHermes logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>McmcHermes</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>McmcHermes.jl</a><ul class="internal"><li><a class="tocitem" href="#Installation"><span>Installation</span></a></li><li><a class="tocitem" href="#Basic-Usage"><span>Basic Usage</span></a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>McmcHermes.jl</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>McmcHermes.jl</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/stevenalfonso/McmcHermes.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/stevenalfonso/McmcHermes.jl/blob/master/docs/src/index.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="McmcHermes.jl"><a class="docs-heading-anchor" href="#McmcHermes.jl">McmcHermes.jl</a><a id="McmcHermes.jl-1"></a><a class="docs-heading-anchor-permalink" href="#McmcHermes.jl" title="Permalink"></a></h1><p><em>A documentation for the McmcHermes package.</em></p><p>McmcHermes is a pure-Julia implementation of <a href="https://en.wikipedia.org/wiki/Metropolis–Hastings_algorithm">Metropolis Hasting Algorithm</a> under an MIT license. McmcHermes will help you if you want to estimate model parameters or sample a probability density distribution.</p><ul><li><a href="#McmcHermes.jl">McmcHermes.jl</a></li><li class="no-marker"><ul><li><a href="#Installation">Installation</a></li><li><a href="#Basic-Usage">Basic Usage</a></li></ul></li></ul><h2 id="Installation"><a class="docs-heading-anchor" href="#Installation">Installation</a><a id="Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Installation" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Pkg
+Pkg.add(&quot;McmcHermes&quot;)</code></pre><h2 id="Basic-Usage"><a class="docs-heading-anchor" href="#Basic-Usage">Basic Usage</a><a id="Basic-Usage-1"></a><a class="docs-heading-anchor-permalink" href="#Basic-Usage" title="Permalink"></a></h2><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>This guide assumes that you already have define your likelihood, prior and the logarithm of the posterior probability as in the example below.</p></div></div><h3 id="Sampling"><a class="docs-heading-anchor" href="#Sampling">Sampling</a><a id="Sampling-1"></a><a class="docs-heading-anchor-permalink" href="#Sampling" title="Permalink"></a></h3><p>If you want to draw samples from two Gaussian distributions, you would do something like:</p><pre><code class="language-julia hljs">function pdf(X::Number, params::Vector)
+    s1, s2, mu1, mu2 = params[1], params[2], params[3], params[4]
+    return 1 / (sqrt(2 * pi) * s1) * exp( -0.5*((X - mu1)/s1)^2 ) + 1 / (sqrt(2 * pi) * s2) * exp( -0.5*((X - mu2)/s2)^2 )
+end
+
+function gaussian_function(X::Vector, params::Vector)
+    x_values = collect(range(minimum(X), maximum(X), length=length(X)))
+    s1, s2, mu1, mu2 = params[1], params[2], params[3], params[4]
+    return 0.5 ./ (sqrt(2 * pi) .* s1) .* exp.(-0.5*((x_values .- mu1)./s1).^2) .+ 0.5 ./ (sqrt(2 * pi) .* s2) .* exp.(-0.5*((x_values .- mu2)./s2).^2)
+end
+
+using McmcHermes
+
+params = [3, 1.5, -5, 5]
+interval = [-20, 20]
+sampling = McmcHermes.sampler(pdf, 10000, interval, params)
+
+x_values = Vector{Float64}(range(interval[1], interval[2], 100))
+
+histogram(sampling, xlabel=L&quot;samples&quot;, ylabel=L&quot;p(x)&quot;, xguidefontsize=12, color=:gray, yguidefontsize=12, normalize=:pdf, show=true, label=&quot;samples&quot;)
+plot!(x_values, gaussian_function(x_values, params), lw=3, size=(500,400), label=&quot;Function&quot;, lc=:orange, show=true)</code></pre><p><img src="assets/samples.png" alt="samples"/></p><h3 id="Parameter-estimation"><a class="docs-heading-anchor" href="#Parameter-estimation">Parameter estimation</a><a id="Parameter-estimation-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-estimation" title="Permalink"></a></h3><p>To estimate parameters <span>$\mu$</span> and <span>$\sigma$</span> from a gaussian distribution. First, you need some data</p><pre><code class="language-julia hljs">using Distributions, Plots, LaTeXStrings, DataFrames
+
+mu, sigma = 10, 2 # truths
+l_b, u_b = 0, 20
+d = Truncated(Normal(mu, sigma), l_b, u_b)
+N = 10000
+data = rand(d, N)
+
+histogram(data, legend=false, size=(400,400), xlabel=L&quot;data&quot;, show=true, normalize=:pdf,  ylabel=L&quot;p(x)&quot;, xguidefontsize=12, color=:gray, yguidefontsize=12)</code></pre><p><img src="assets/hist.png" alt="data"/></p><p>Now, define likelihood and prior</p><pre><code class="language-julia hljs">function log_likelihood(X::Vector, parameters::Vector)
+    mu, sigma = parameters[1], parameters[2]
+    y = 1 ./ (sqrt(2 * pi) .* sigma) .* exp.( -0.5 * ((X .- mu)./sigma).^2 )
+    return sum(log.(y))
+end
+
+function log_prior(parameters::Vector)
+    mu, sigma = parameters[1], parameters[2]
+    if 5.0 &lt; mu &lt; 15.0 &amp;&amp; 0.0 &lt; sigma &lt; 4.0
+        return 0.0
+    end
+    return -Inf
+end
+
+function log_probability(X::Vector, parameters::Vector)
+    lp = log_prior(parameters)
+    if !isfinite(lp)
+        return -Inf
+    end
+    return lp + log_likelihood(X, parameters)
+end</code></pre><p>Then, define the number of walkers, iterations, dimension of the parameter space and the initial guess.</p><pre><code class="language-julia hljs">using McmcHermes
+
+mu, sigma = 10, 2
+initparams = Vector{Float64}([mu, sigma])
+
+n_iter, n_walkers = 5000, 30
+n_dim = 2
+seed = rand(n_walkers, n_dim) * 1e-4 .+ transpose(initparams)
+
+chains = McmcHermes.run_mcmc(log_probability, data, seed, n_iter, n_walkers, n_dim, a=0.01)
+
+println(size(chains)) # (5000, 30, 2)</code></pre><p>The convergence of the chains can be validated by the Gelman-Rubin&#39;s diagnostic:</p><pre><code class="language-julia hljs">println(&quot;Gelman Rubin Diagnostic: &quot;, McmcHermes.get_gelman_rubin(chains)) # 1.0206366055</code></pre><p>Finally, plot the chains.</p><pre><code class="language-julia hljs">labels = Tuple([L&quot;\mu&quot;, L&quot;\sigma&quot;])
+x = 1:size(chains)[1]
+p = []
+for ind in 1:n_dim
+    push!(p, plot(x, [chains[:,i,ind] for i in 1:size(chains)[2]], legend=false, 
+    lc=:black, lw=1, ylabel=labels[ind], alpha = 0.1, xticks=false))
+end
+
+plot(p[1], p[2], layout = (2,1))
+plot!(size=(600,200), xlims = (0, size(chains)[1]), show=true)</code></pre><p><img src="assets/chains.png" alt="chains"/></p><p>Chains can also be plotted in a corner. To do so, get the flat chain</p><pre><code class="language-julia hljs">flat_chains = McmcHermes.get_flat_chain(chains, burn_in=100, thin=10)
+println(size(flat_chains)) # (14901, 2)
+mean_posterior = quantile(flat_chains[:, 1], 0.5) # 10.0273672
+std_posterior = quantile(flat_chains[:, 2], 0.5) # 1.9998453
+
+using PairPlots, CairoMakie
+
+table = (; x=flat_chains[:,1], y=flat_chains[:,2],)
+fig = pairplot(table, labels = Dict(:x =&gt; L&quot;\mu&quot;, :y =&gt; L&quot;\sigma&quot;))</code></pre><p><img src="assets/corner.png" alt="corner"/></p><p><em>Develop by <a href="https://github.com/stevenalfonso">J. Alfonso</a>.</em></p><ul></ul></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Sunday 3 March 2024 23:21">Sunday 3 March 2024</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
