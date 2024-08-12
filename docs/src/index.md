@@ -153,7 +153,7 @@ fig = pairplot(table, labels = Dict(:x => L"\mu", :y => L"\sigma"))
 ![corner](./assets/corner.png)
 
 
-*Develop by [J. Alfonso](https://github.com/stevenalfonso).*
+*Developed by [J. Alfonso](https://github.com/stevenalfonso).*
 
 
 ```@index
