@@ -168,7 +168,7 @@ function sampler(pdf::Function,
     states = ones(n_samples)
     current = rand(Uniform(interval[1], interval[2]), 1)[1]
 
-    for i in 1:n_samples
+    @showprogress "Sampling..." for i in 1:n_samples
         
         #push!(states, current)
         states[i] = current
