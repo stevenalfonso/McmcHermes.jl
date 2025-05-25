@@ -20,60 +20,83 @@ sampling = McmcHermes.sampler(pdf, 10000, interval, params)
 x_values = Vector{Float64}(range(interval[1], interval[2], 100))
 
 histogram(sampling, xlabel=L&quot;samples&quot;, ylabel=L&quot;p(x)&quot;, xguidefontsize=12, color=:gray, yguidefontsize=12, normalize=:pdf, show=true, label=&quot;samples&quot;)
-plot!(x_values, gaussian_function(x_values, params), lw=3, size=(500,400), label=&quot;Function&quot;, lc=:orange, show=true)</code></pre><p><img src="assets/samples.png" alt="samples"/></p><h3 id="Parameter-estimation"><a class="docs-heading-anchor" href="#Parameter-estimation">Parameter estimation</a><a id="Parameter-estimation-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-estimation" title="Permalink"></a></h3><p>To estimate parameters <span>$\mu$</span> and <span>$\sigma$</span> from a gaussian distribution. First, you need some data</p><pre><code class="language-julia hljs">using Distributions, Plots, LaTeXStrings, DataFrames
+plot!(x_values, gaussian_function(x_values, params), lw=3, size=(500,400), label=&quot;Function&quot;, lc=:orange, show=true)</code></pre><p><img src="assets/samples.png" alt="samples"/></p><h3 id="Parameter-estimation"><a class="docs-heading-anchor" href="#Parameter-estimation">Parameter estimation</a><a id="Parameter-estimation-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-estimation" title="Permalink"></a></h3><p><em>McmcHermes</em> can be used to estimate parameters from a model. For instance, from one of my papers <a href="https://ui.adsabs.harvard.edu/abs/2023A%26A...677A.163A/abstract"><em>A Gaia astrometric view of the open clusters, Pleiades, Praesepe, and Blanco 1</em></a>; the estimation of the nine parameters of the assumed proper motions model can be estimated through <em>McmcHermes</em>.</p><p>The log-likelihood of the proper motions model is defined as</p><p>$</p><p>\begin{aligned} \log \mathcal{L}(x, y \mid \theta) &amp;= \sum \log \left[ A<em>{\text{circ}} \cdot \exp\left( -\frac{1}{2} \left( \frac{x - \mu</em>{xc}}{s} \right)^2 + \left( \frac{y - \mu<em>{yc}}{s} \right)^2 \right) \right. \
+&amp;\quad + \left. A</em>{\text{elip}} \cdot \exp\left( -\frac{1}{2(1 - \rho^2)} \left[ \left( \frac{x - \mu<em>{xf}}{s</em>x} \right)^2 + \left( \frac{y - \mu<em>{yf}}{s</em>y} \right)^2 - 2\rho \left( \frac{x - \mu<em>{xf}}{s</em>x} \right) \left( \frac{y - \mu<em>{yf}}{s</em>y} \right) \right] \right) \right] \end{aligned} $</p><p>with  $ A<em>{\text{circ}} = \frac{n</em>c}{2\pi s^2} $</p><p>$</p><p>A<em>{\text{elip}} = \frac{1 - n</em>c}{2\pi s<em>x s</em>y \sqrt{1 - \rho^2}} $</p><p>That function depends on nine parameters</p><p>$</p><p>n<em>c,\quad s,\quad s</em>x,\quad s<em>y,\quad \rho,\quad \mu</em>{xc},\quad \mu<em>{yc},\quad \mu</em>{xf},\quad \mu_{yf} $</p><p>Let&#39;s now estimate them by using the <em>McmcHermes</em> package. First, here is the plot of the proper motions in the field of the Pleiades open cluster</p><pre><code class="language-julia hljs">using Distributions, Plots, LaTeXStrings, DataFrames, CSV
 
-mu, sigma = 10, 2 # truths
-l_b, u_b = 0, 20
-d = Truncated(Normal(mu, sigma), l_b, u_b)
-N = 10000
-data = rand(d, N)
+df = DataFrame(CSV.File(&quot;./pleiades_field-result.csv&quot;))
+pleiades_field = df[(df.pmra .&gt;= 10) .&amp; (df.pmra .&lt;= 30) .&amp; (df.pmdec .&gt;= -55) .&amp; (df.pmdec .&lt;= -35), :]
 
-histogram(data, legend=false, size=(400,400), xlabel=L&quot;data&quot;, show=true, normalize=:pdf,  ylabel=L&quot;p(x)&quot;, xguidefontsize=12, color=:gray, yguidefontsize=12)</code></pre><p><img src="assets/hist.png" alt="data"/></p><p>Now, define likelihood and prior</p><pre><code class="language-julia hljs">function log_likelihood(X::Vector, parameters::Vector)
-    mu, sigma = parameters[1], parameters[2]
-    y = 1 ./ (sqrt(2 * pi) .* sigma) .* exp.( -0.5 * ((X .- mu)./sigma).^2 )
-    return sum(log.(y))
+x = pleiades_field[!,:pmra]
+y = pleiades_field[!,:pmdec]
+scatter(x, y, title=&quot;Pleiades Proper Motions&quot;, xlabel=&quot;pmra&quot;, ylabel=&quot;pmdec&quot;, legend=false, markersize=2)</code></pre><p><img src="assets/vpd.png" alt="data"/></p><p>You can download the Pleiades field data from the <a href="https://gea.esac.esa.int/archive/"><em>Gaia Archive</em></a> by using this query</p><pre><code class="language-sql hljs">SELECT * FROM gaiadr3.gaia_source AS gaia 
+WHERE CONTAINS(POINT(&#39;ICRS&#39;,gaia.ra,gaia.dec), CIRCLE(&#39;ICRS&#39;, 56.85, 23.51, 5))=1
+AND gaia.visibility_periods_used &gt; 6 AND gaia.pmra IS NOT NULL AND gaia.pmra != 0 
+AND gaia.pmdec IS NOT NULL AND gaia.pmdec != 0 AND gaia.parallax IS NOT NULL AND gaia.ruwe &lt; 1.4
+AND gaia.parallax_over_error &gt; 10 AND gaia.astrometric_params_solved &gt; 3
+AND gaia.parallax &gt;= 2</code></pre><p>Now, we define the likelihood and prior</p><pre><code class="language-julia hljs">function log_likelihood(X::Vector, params::Vector)
+    x, y = X[1], X[2]
+    nc, s, sx, sy, rho = params[1], params[2], params[3], params[4], params[5]
+    mu_xc, mu_yc, mu_xf, mu_yf = params[6], params[7], params[8], params[9]
+    amp_circ = nc ./ (2 * pi .* s.^2)
+    amp_elip = (1-nc) ./ (2 * pi * sx * sy * sqrt(1 - rho.^2))
+    Exp_circ = -0.5 * (((x .- mu_xc)./s).^2 .+ ((y .- mu_yc)./s).^2)
+    Exp_elip = -1 ./ (2*(1-rho.^2)) .* (((x .- mu_xf)./sx).^2
+        .+ ((y .- mu_yf)./sy).^2 .- 2 * rho * ((x .- mu_xf)./sx) .* ((y .- mu_yf)./sy))
+    z = amp_circ .* exp.(Exp_circ) + amp_elip .* exp.(Exp_elip)
+    return sum(log.(z))
 end
 
-function log_prior(parameters::Vector)
-    mu, sigma = parameters[1], parameters[2]
-    if 5.0 &lt; mu &lt; 15.0 &amp;&amp; 0.0 &lt; sigma &lt; 4.0
+function log_prior(params::Vector)
+    nc, s, sx, sy, rho = params[1], params[2], params[3], params[4], params[5]
+    mu_xc, mu_yc, mu_xf, mu_yf = params[6], params[7], params[8], params[9]
+    if 0.0 &lt; nc &lt; 1.0 &amp;&amp; 0.0 &lt; s &lt; 10.0 &amp;&amp; 0.0 &lt; sx &lt; 10.0 &amp;&amp; 0.0 &lt; sy &lt; 10.0 &amp;&amp; -1.0 &lt; rho &lt; 1.0
         return 0.0
     end
     return -Inf
 end
 
-function log_probability(X::Vector, parameters::Vector)
-    lp = log_prior(parameters)
+function log_probability(X::Vector, params::Vector)
+    x, y = X[1], X[2]
+    lp = log_prior(params)
     if !isfinite(lp)
         return -Inf
     end
-    return lp + log_likelihood(X, parameters)
-end</code></pre><p>Then, define the number of walkers, iterations, dimension of the parameter space and the initial guess.</p><pre><code class="language-julia hljs">using McmcHermes
+    return lp + log_likelihood(X, params)
+end</code></pre><p>First, let&#39;s apply the Maximum Likelihood Estimation to get a good initial guess</p><pre><code class="language-julia hljs">using Optim
 
-mu, sigma = 10, 2
-initparams = Vector{Float64}([mu, sigma])
+make_closures(X) = params -&gt; -log_likelihood(X, params)
+data = [x, y]
+nc, s, sx, sy, rho = 0.5, 1.0, 5.0, 5.0, 0.1
+mu_xc, mu_yc, mu_xf, mu_yf = 20, -45, 20, -45
+initparams = Vector{Float64}([nc, s, sx, sy, rho, mu_xc, mu_yc, mu_xf, mu_yf])
+nll = make_closures(data)
+opt_pm = optimize(nll, initparams, NelderMead(), autodiff=:forward)
+mle_params = Optim.minimizer(opt_pm)
+println(&quot;mle_params: &quot;, mle_params) # [0.5703616168913359, 1.145121636314209, 4.683106119784698, 5.1177766210904485, -0.16776744025292578, 19.891677759318622, -45.419917930062915, 19.632955307887066, -43.415932987439774]</code></pre><p>Then, define the number of walkers, iterations, dimension of the parameter space and the initial guess. Here we use the initial guess obtained from the MLE.</p><pre><code class="language-julia hljs">using McmcHermes
 
-n_iter, n_walkers = 5000, 30
-n_dim = 2
-seed = rand(n_walkers, n_dim) * 1e-4 .+ transpose(initparams)
+n_iter, n_walkers = 5000, 50
+n_dim = 9
+seed = rand(n_walkers, n_dim) * 1e-4 .+ transpose(mle_params)
 
 chains = McmcHermes.run_mcmc(log_probability, data, seed, n_iter, n_walkers, n_dim, a=0.01)
 
-println(size(chains)) # (5000, 30, 2)</code></pre><p>The convergence of the chains can be validated by the Gelman-Rubin&#39;s diagnostic:</p><pre><code class="language-julia hljs">println(&quot;Gelman Rubin Diagnostic: &quot;, McmcHermes.get_gelman_rubin(chains)) # 1.0206366055</code></pre><p>Finally, plot the chains.</p><pre><code class="language-julia hljs">labels = Tuple([L&quot;\mu&quot;, L&quot;\sigma&quot;])
-x = 1:size(chains)[1]
-p = []
-for ind in 1:n_dim
-    push!(p, plot(x, [chains[:,i,ind] for i in 1:size(chains)[2]], legend=false, 
-    lc=:black, lw=1, ylabel=labels[ind], alpha = 0.1, xticks=false))
-end
-
-plot(p[1], p[2], layout = (2,1))
-plot!(size=(600,200), xlims = (0, size(chains)[1]), show=true)</code></pre><p><img src="assets/chains.png" alt="chains"/></p><p>Chains can also be plotted in a corner. To do so, get the flat chain</p><pre><code class="language-julia hljs">flat_chains = McmcHermes.get_flat_chain(chains, burn_in=100, thin=10)
-println(size(flat_chains)) # (14901, 2)
-mean_posterior = quantile(flat_chains[:, 1], 0.5) # 10.0273672
-std_posterior = quantile(flat_chains[:, 2], 0.5) # 1.9998453
+println(size(chains)) # (5000, 50, 9)</code></pre><p>The convergence of the chains can be validated by the Gelman-Rubin&#39;s diagnostic:</p><pre><code class="language-julia hljs">println(&quot;Gelman Rubin Diagnostic: &quot;, McmcHermes.get_gelman_rubin(chains)) # 1.1161957469617692</code></pre><p>Finally, plot the corner plot with the chains.</p><pre><code class="language-julia hljs">flat_chains = McmcHermes.get_flat_chain(chains, burn_in=100, thin=10)
+println(size(flat_chains)) # (24901, 9)
 
 using PairPlots, CairoMakie
 
-table = (; x=flat_chains[:,1], y=flat_chains[:,2],)
-fig = pairplot(table, labels = Dict(:x =&gt; L&quot;\mu&quot;, :y =&gt; L&quot;\sigma&quot;))</code></pre><p><img src="assets/corner.png" alt="corner"/></p><p><em>Developed by <a href="https://github.com/stevenalfonso">J. Alfonso</a>.</em></p><ul></ul></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.4 on <span class="colophon-date" title="Sunday 25 May 2025 03:07">Sunday 25 May 2025</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+labels = Dict(
+    :nc     =&gt; L&quot;n_c&quot;,
+    :s      =&gt; L&quot;s&quot;,
+    :sx     =&gt; L&quot;s_x&quot;,
+    :sy     =&gt; L&quot;s_y&quot;,
+    :rho    =&gt; L&quot;\rho&quot;,
+    :mu_xc  =&gt; L&quot;\mu_{xc}&quot;,
+    :mu_yc  =&gt; L&quot;\mu_{yc}&quot;,
+    :mu_xf  =&gt; L&quot;\mu_{xf}&quot;,
+    :mu_yf  =&gt; L&quot;\mu_{yf}&quot;
+)
+
+parameters = (:nc, :s, :sx, :sy, :rho, :mu_xc, :mu_yc, :mu_xf, :mu_yf)
+data = NamedTuple{parameters}(eachcol(flat_chains))
+pairplot(data; labels=labels, axis=(xlabelsize=18, ylabelsize=18))</code></pre><p><img src="assets/corner.png" alt="corner"/></p><p><em>Developed by <a href="https://github.com/stevenalfonso">J. Alfonso</a>.</em></p><ul></ul></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.4 on <span class="colophon-date" title="Sunday 25 May 2025 23:51">Sunday 25 May 2025</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
