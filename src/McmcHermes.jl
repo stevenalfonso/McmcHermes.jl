@@ -68,15 +68,15 @@ function run_mcmc(log_prob::Function,
 
     mcmc_chains = ones(( n_iter, n_dim, n_walkers ))
 
-    Threads.@threads for walkers in ProgressBar(1:n_walkers)
-        one_chain = one_mcmc(log_prob, data, seed[walkers,:], n_iter, a)
-        mcmc_chains[:,:,walkers] = one_chain
-    end
-
-    # @showprogress "Running chains..." for walkers in 1:n_walkers
+    # Threads.@threads for walkers in ProgressBar(1:n_walkers)
     #     one_chain = one_mcmc(log_prob, data, seed[walkers,:], n_iter, a)
     #     mcmc_chains[:,:,walkers] = one_chain
     # end
+
+    @showprogress "Running chains..." for walkers in 1:n_walkers
+        one_chain = one_mcmc(log_prob, data, seed[walkers,:], n_iter, a)
+        mcmc_chains[:,:,walkers] = one_chain
+    end
 
     # start_time = time_ns()
 

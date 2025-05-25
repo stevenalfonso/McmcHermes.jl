@@ -6,10 +6,11 @@ version = "1.0.1"
 [deps]
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-Distributions = "0.25"
-julia = "1.8"
 Compat = "4.6"
+Distributions = "0.25"
+ProgressMeter = "1.10.4"
+julia = "1.8"
