@@ -1,7 +1,7 @@
 name = "McmcHermes"
 uuid = "1dcdc7e9-a8b1-4892-8a0a-cdab5a60ee98"
 authors = ["stevenalfonso <je.alfonso1@uniandes.edu.co>"]
-version = "1.0.1"
+version = "1.0.2"
 
 [deps]
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"

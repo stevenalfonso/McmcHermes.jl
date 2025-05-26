@@ -59,9 +59,7 @@ plot!(x_values, gaussian_function(x_values, params), lw=3, size=(500,400), label
 
 The log-likelihood of the proper motions model is defined as
 
-<div class="math">
-
-\[
+```math
 \log \mathcal{L}(x, y \mid \theta) = \sum \log \left[ 
 A_{\text{circ}} \cdot \exp\left( 
 -\frac{1}{2} \left( 
@@ -78,13 +76,11 @@ A_{\text{elip}} \cdot \exp\left(
 \right) 
 \right) 
 \right]
-\]
-
-</div>
+```
 
 with 
-<div class="math">
 
+```math
 \[
 A_{\text{circ}} = \frac{n_c}{2\pi s^2}
 \]
@@ -92,18 +88,16 @@ A_{\text{circ}} = \frac{n_c}{2\pi s^2}
 \[
 A_{\text{elip}} = \frac{1 - n_c}{2\pi s_x s_y \sqrt{1 - \rho^2}}
 \]
+```
 
-</div>
 
 That function depends on nine parameters
 
-<div class="math">
-
+```math
 \[
 n_c,\quad s,\quad s_x,\quad s_y,\quad \rho,\quad \mu_{xc},\quad \mu_{yc},\quad \mu_{xf},\quad \mu_{yf}
 \]
-
-</div>
+```
 
 Let's now estimate them by using the *McmcHermes* package. First, here is the plot of the proper motions in the field of the Pleiades open cluster
 
