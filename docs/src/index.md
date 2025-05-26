@@ -78,7 +78,7 @@ A_{\text{elip}} \cdot \exp\left(
 \right]
 ```
 
-with 
+where $x$ and $y$ are $\mu_{\alpha, *}$ and $\mu_{\delta}$ proper motions, respectively, and
 
 ```math
 A_{\text{circ}} = \frac{n_c}{2\pi s^2}
