@@ -81,22 +81,17 @@ A_{\text{elip}} \cdot \exp\left(
 with 
 
 ```math
-\[
 A_{\text{circ}} = \frac{n_c}{2\pi s^2}
-\]
-
-\[
-A_{\text{elip}} = \frac{1 - n_c}{2\pi s_x s_y \sqrt{1 - \rho^2}}
-\]
 ```
 
+```math
+A_{\text{elip}} = \frac{1 - n_c}{2\pi s_x s_y \sqrt{1 - \rho^2}}
+```
 
 That function depends on nine parameters
 
 ```math
-\[
 n_c,\quad s,\quad s_x,\quad s_y,\quad \rho,\quad \mu_{xc},\quad \mu_{yc},\quad \mu_{xf},\quad \mu_{yf}
-\]
 ```
 
 Let's now estimate them by using the *McmcHermes* package. First, here is the plot of the proper motions in the field of the Pleiades open cluster
