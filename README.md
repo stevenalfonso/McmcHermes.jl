@@ -6,6 +6,7 @@
 ![GitHub forks](https://img.shields.io/github/forks/stevenalfonso/McmcHermes.jl?style=social)
 ![GitHub issues](https://img.shields.io/github/issues/stevenalfonso/McmcHermes.jl)
 ![GitHub last commit](https://img.shields.io/github/last-commit/stevenalfonso/McmcHermes.jl)
+[![GitHub license](https://img.shields.io/github/license/stevenalfonso/McmcHermes.jl)](https://github.com/stevenalfonso/McmcHermes.jl/blob/master/LICENSE)
 
 
 # McmcHermes.jl
